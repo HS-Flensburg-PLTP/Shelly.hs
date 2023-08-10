@@ -50,7 +50,7 @@ module Shelly
          , HandleInitializer, StdInit(..), initOutputHandles, initAllHandles
 
          -- * Modifying and querying environment
-         , setenv, get_env, get_env_text, getenv, get_env_def, get_env_all, get_environment, appendToPath, prependToPath
+         , setenv, unsetenv, get_env, get_env_text, getenv, get_env_def, get_env_all, get_environment, appendToPath, prependToPath
 
          -- * Environment directory
          , cd, chdir, chdir_p, pwd
@@ -703,6 +703,12 @@ rm = traceAbsPath ("rm " <>) >=>
 -- internally, and is passed to any external commands to be executed.
 setenv :: Text -> Text -> Sh ()
 setenv k v = if k == path_env then setPath v else setenvRaw k v
+
+-- | Unset an environment variable.
+unsetenv :: Text -> Sh ()
+unsetenv k = modify $ \s -> s { sEnvironment = filter ((/=T.unpack normK) . fst) (sEnvironment s) }
+  where
+    normK = normalizeEnvVarNameText k
 
 setenvRaw :: Text -> Text -> Sh ()
 setenvRaw k v = modify $ \x -> x { sEnvironment = wibble $ sEnvironment x }
